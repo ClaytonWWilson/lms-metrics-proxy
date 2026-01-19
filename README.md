@@ -185,23 +185,19 @@ Returns usage statistics grouped by model.
   "models": [
     {
       "model": "llama-3.2-1b-instruct",
-      "request_count": 100,
-      "total_input_tokens": 8500,
-      "total_output_tokens": 32000,
+      "requests": 100,
+      "input_tokens": 8500,
+      "output_tokens": 32000,
       "total_tokens": 40500,
-      "avg_input_tokens": 85.0,
-      "avg_output_tokens": 320.0,
-      "avg_duration_ms": 850
+      "avg_tokens_per_request": 405.0
     },
     {
       "model": "mistral-7b-instruct",
-      "request_count": 50,
-      "total_input_tokens": 4043,
-      "total_output_tokens": 13621,
+      "requests": 50,
+      "input_tokens": 4043,
+      "output_tokens": 13621,
       "total_tokens": 17664,
-      "avg_input_tokens": 80.9,
-      "avg_output_tokens": 272.4,
-      "avg_duration_ms": 1200
+      "avg_tokens_per_request": 353.3
     }
   ]
 }

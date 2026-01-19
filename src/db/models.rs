@@ -176,6 +176,8 @@ pub async fn get_summary_stats(pool: &SqlitePool) -> Result<SummaryStats, sqlx::
 pub struct ModelStats {
     pub model: String,
     pub requests: i64,
+    pub input_tokens: i64,
+    pub output_tokens: i64,
     pub total_tokens: i64,
     pub avg_tokens_per_request: f64,
 }
@@ -186,6 +188,8 @@ pub async fn get_model_stats(pool: &SqlitePool) -> Result<Vec<ModelStats>, sqlx:
         SELECT
             model,
             COUNT(*) as requests,
+            COALESCE(SUM(input_tokens), 0) as input_tokens,
+            COALESCE(SUM(output_tokens), 0) as output_tokens,
             COALESCE(SUM(total_tokens), 0) as total_tokens,
             COALESCE(AVG(CAST(total_tokens AS REAL)), 0.0) as avg_tokens_per_request
         FROM requests
@@ -202,6 +206,8 @@ pub async fn get_model_stats(pool: &SqlitePool) -> Result<Vec<ModelStats>, sqlx:
         stats.push(ModelStats {
             model: row.try_get("model")?,
             requests: row.try_get("requests")?,
+            input_tokens: row.try_get("input_tokens")?,
+            output_tokens: row.try_get("output_tokens")?,
             total_tokens: row.try_get("total_tokens")?,
             avg_tokens_per_request: row.try_get("avg_tokens_per_request")?,
         });
