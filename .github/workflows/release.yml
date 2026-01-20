@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 env:
   REGISTRY: ghcr.io
@@ -16,16 +16,16 @@ jobs:
         include:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-            binary: token_counter
-            artifact: token_counter-linux-x86_64
+            binary: lms_metrics_proxy
+            artifact: lms_metrics_proxy-linux-x86_64
           - os: windows-latest
             target: x86_64-pc-windows-msvc
-            binary: token_counter.exe
-            artifact: token_counter-windows-x86_64.exe
+            binary: lms_metrics_proxy.exe
+            artifact: lms_metrics_proxy-windows-x86_64.exe
           - os: macos-latest
             target: aarch64-apple-darwin
-            binary: token_counter
-            artifact: token_counter-macos-aarch64
+            binary: lms_metrics_proxy
+            artifact: lms_metrics_proxy-macos-aarch64
 
     runs-on: ${{ matrix.os }}
 
@@ -94,19 +94,19 @@ jobs:
       - name: Download Linux artifact
         uses: actions/download-artifact@v4
         with:
-          name: token_counter-linux-x86_64
+          name: lms_metrics_proxy-linux-x86_64
           path: artifacts
 
       - name: Download Windows artifact
         uses: actions/download-artifact@v4
         with:
-          name: token_counter-windows-x86_64.exe
+          name: lms_metrics_proxy-windows-x86_64.exe
           path: artifacts
 
       - name: Download macOS artifact
         uses: actions/download-artifact@v4
         with:
-          name: token_counter-macos-aarch64
+          name: lms_metrics_proxy-macos-aarch64
           path: artifacts
 
       - name: Extract version from tag
@@ -116,9 +116,9 @@ jobs:
       - name: Rename artifacts with version
         run: |
           VERSION=${{ steps.version.outputs.VERSION }}
-          mv artifacts/token_counter-linux-x86_64 artifacts/token_counter-${VERSION}-linux-x86_64
-          mv artifacts/token_counter-windows-x86_64.exe artifacts/token_counter-${VERSION}-windows-x86_64.exe
-          mv artifacts/token_counter-macos-aarch64 artifacts/token_counter-${VERSION}-macos-aarch64
+          mv artifacts/lms_metrics_proxy-linux-x86_64 artifacts/lms_metrics_proxy-${VERSION}-linux-x86_64
+          mv artifacts/lms_metrics_proxy-windows-x86_64.exe artifacts/lms_metrics_proxy-${VERSION}-windows-x86_64.exe
+          mv artifacts/lms_metrics_proxy-macos-aarch64 artifacts/lms_metrics_proxy-${VERSION}-macos-aarch64
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -126,6 +126,6 @@ jobs:
           name: v${{ steps.version.outputs.VERSION }}
           generate_release_notes: true
           files: |
-            artifacts/token_counter-${{ steps.version.outputs.VERSION }}-linux-x86_64
-            artifacts/token_counter-${{ steps.version.outputs.VERSION }}-windows-x86_64.exe
-            artifacts/token_counter-${{ steps.version.outputs.VERSION }}-macos-aarch64
+            artifacts/lms_metrics_proxy-${{ steps.version.outputs.VERSION }}-linux-x86_64
+            artifacts/lms_metrics_proxy-${{ steps.version.outputs.VERSION }}-windows-x86_64.exe
+            artifacts/lms_metrics_proxy-${{ steps.version.outputs.VERSION }}-macos-aarch64

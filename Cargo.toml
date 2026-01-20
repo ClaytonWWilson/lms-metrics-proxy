@@ -1,5 +1,5 @@
 [package]
-name = "token_counter"
+name = "lms_metrics_proxy"
 version = "0.1.1"
 edition = "2024"
 

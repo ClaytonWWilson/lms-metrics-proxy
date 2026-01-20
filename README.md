@@ -44,7 +44,7 @@ Returns response to your application
 1. Clone the repository:
 ```bash
 git clone <repository-url>
-cd token_counter
+cd lms_metrics_proxy
 ```
 
 2. Copy the example configuration file:
@@ -56,7 +56,7 @@ cp .env.example .env
 ```env
 PORT=8080                              # Port for the proxy server
 LM_STUDIO_URL=http://localhost:1234    # LM Studio API endpoint (excluding /v1/)
-DATABASE_URL=sqlite:./token_counter.db # Database file location
+DATABASE_URL=sqlite:./lms_metrics_proxy.db # Database file location
 RUST_LOG=info                          # Logging level
 ```
 
@@ -75,7 +75,7 @@ Edit the `.env` file to customize settings:
 |----------|-------------|---------|
 | `PORT` | Port the proxy server listens on | `8080` |
 | `LM_STUDIO_URL` | Base URL for LM Studio API | `http://localhost:1234` |
-| `DATABASE_URL` | SQLite database path | `sqlite:./token_counter.db` |
+| `DATABASE_URL` | SQLite database path | `sqlite:./lms_metrics_proxy.db` |
 | `RUST_LOG` | Logging level (trace, debug, info, warn, error) | `info` |
 
 ## Usage
@@ -89,7 +89,7 @@ cargo run --release
 You should see output like:
 ```
 Starting token counter proxy on port 8080 with LM Studio at http://localhost:1234
-Database initialized at sqlite:./token_counter.db
+Database initialized at sqlite:./lms_metrics_proxy.db
 Proxy server listening on 0.0.0.0:8080
 ```
 
@@ -154,7 +154,7 @@ Health check endpoint.
 ```json
 {
   "status": "ok",
-  "service": "token_counter_proxy"
+  "service": "lms_metrics_proxy_proxy"
 }
 ```
 
@@ -318,8 +318,8 @@ If port 8080 is already taken:
 
 **Solutions:**
 - Ensure the directory for `DATABASE_URL` exists and is writable
-- Check file permissions on `token_counter.db`
-- Try using an absolute path in `DATABASE_URL` (e.g., `sqlite:/home/user/data/token_counter.db`)
+- Check file permissions on `lms_metrics_proxy.db`
+- Try using an absolute path in `DATABASE_URL` (e.g., `sqlite:/home/user/data/lms_metrics_proxy.db`)
 
 ### No Token Counts in Statistics
 

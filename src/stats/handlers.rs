@@ -1,6 +1,6 @@
 use axum::{
-    extract::{Query, State},
     Json,
+    extract::{Query, State},
 };
 use serde::Deserialize;
 use serde_json::json;
@@ -44,6 +44,6 @@ pub async fn get_recent(
 pub async fn health_check() -> Json<serde_json::Value> {
     Json(json!({
         "status": "ok",
-        "service": "token_counter_proxy"
+        "service": "lms_metrics_proxy_proxy"
     }))
 }
