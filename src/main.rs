@@ -5,9 +5,9 @@ mod proxy;
 mod stats;
 
 use axum::{
+Router,
     routing::{any, get},
-    Router,
-};
+    };
 use sqlx::sqlite::SqlitePoolOptions;
 use std::sync::Arc;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
@@ -18,7 +18,7 @@ async fn main() -> anyhow::Result<()> {
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "token_counter=info,tower_http=info".into()),
+                .unwrap_or_else(|_| "lms_metrics_proxy=info,tower_http=info".into()),
         )
         .with(tracing_subscriber::fmt::layer())
         .init();
@@ -33,7 +33,10 @@ async fn main() -> anyhow::Result<()> {
 
     // Initialize database
     // Parse the database URL to extract the file path and ensure parent directory exists
-    let db_path = config.database_url.strip_prefix("sqlite:").unwrap_or(&config.database_url);
+    let db_path = config
+.database_url
+.strip_prefix("sqlite:")
+.unwrap_or(&config.database_url);
     if let Some(parent) = std::path::Path::new(db_path).parent() {
         std::fs::create_dir_all(parent)?;
     }

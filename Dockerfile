@@ -16,7 +16,7 @@ COPY Cargo.toml Cargo.lock ./
 RUN mkdir src && echo "fn main() {}" > src/main.rs
 
 # Build dependencies only (cached layer)
-RUN cargo build --release && rm -rf src target/release/deps/token_counter*
+RUN cargo build --release && rm -rf src target/release/deps/lms_metrics_proxy*
 
 # Copy actual source code
 COPY src ./src
@@ -35,10 +35,10 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy the compiled binary from builder
-COPY --from=builder /app/target/release/token_counter /app/token_counter
+COPY --from=builder /app/target/release/lms_metrics_proxy /app/lms_metrics_proxy
 
 # Expose the default port
 EXPOSE 8080
 
 # Run the application
-CMD ["./token_counter"]
+CMD ["./lms_metrics_proxy"]
