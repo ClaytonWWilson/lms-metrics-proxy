@@ -5,9 +5,9 @@ mod proxy;
 mod stats;
 
 use axum::{
-Router,
+    Router,
     routing::{any, get},
-    };
+};
 use sqlx::sqlite::SqlitePoolOptions;
 use std::sync::Arc;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
@@ -34,9 +34,9 @@ async fn main() -> anyhow::Result<()> {
     // Initialize database
     // Parse the database URL to extract the file path and ensure parent directory exists
     let db_path = config
-.database_url
-.strip_prefix("sqlite:")
-.unwrap_or(&config.database_url);
+        .database_url
+        .strip_prefix("sqlite:")
+        .unwrap_or(&config.database_url);
     if let Some(parent) = std::path::Path::new(db_path).parent() {
         std::fs::create_dir_all(parent)?;
     }
@@ -68,7 +68,7 @@ async fn main() -> anyhow::Result<()> {
         .route("/stats/by-model", get(stats::get_by_model))
         .route("/stats/recent", get(stats::get_recent))
         // Proxy endpoints - catch all /v1/* routes with any HTTP method
-        .route("/v1/*path", any(proxy::proxy_handler))
+        .route("/v1/{*path}", any(proxy::proxy_handler))
         .with_state(state);
 
     // Start server
