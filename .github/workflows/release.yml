@@ -91,9 +91,22 @@ jobs:
       contents: write
 
     steps:
-      - name: Download all artifacts
+      - name: Download Linux artifact
         uses: actions/download-artifact@v4
         with:
+          name: token_counter-linux-x86_64
+          path: artifacts
+
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: token_counter-windows-x86_64.exe
+          path: artifacts
+
+      - name: Download macOS artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: token_counter-macos-aarch64
           path: artifacts
 
       - name: Extract version from tag
@@ -106,6 +119,6 @@ jobs:
           name: v${{ steps.version.outputs.VERSION }}
           generate_release_notes: true
           files: |
-            artifacts/token_counter-linux-x86_64/token_counter-linux-x86_64
-            artifacts/token_counter-windows-x86_64.exe/token_counter-windows-x86_64.exe
-            artifacts/token_counter-macos-aarch64/token_counter-macos-aarch64
+            artifacts/token_counter-linux-x86_64
+            artifacts/token_counter-windows-x86_64.exe
+            artifacts/token_counter-macos-aarch64
