@@ -20,8 +20,8 @@ impl Config {
         let lm_studio_url =
             env::var("LM_STUDIO_URL").unwrap_or_else(|_| "http://localhost:1234".to_string());
 
-        let database_url = env::var("DATABASE_URL")
-            .unwrap_or_else(|_| "sqlite:./lms_metrics_proxy.db".to_string());
+        let database_url =
+            env::var("DATABASE_URL").unwrap_or_else(|_| "sqlite:./metrics.db".to_string());
 
         Ok(Config {
             port,
