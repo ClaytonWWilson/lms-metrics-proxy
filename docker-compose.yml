@@ -1,0 +1,14 @@
+services:
+  lms-metrics-proxy:
+    image: ghcr.io/claytonwwilson/lms-metrics-proxy:latest
+    container_name: lms-metrics-proxy
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - PORT=8080
+      - LM_STUDIO_URL=http://host.docker.internal:1234
+      - DATABASE_URL=sqlite:./data/metrics.db
+      - RUST_LOG=info
+    restart: unless-stopped
