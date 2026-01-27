@@ -2,8 +2,11 @@
 
 A proxy server that tracks and logs token usage for LM Studio API requests.
 
-## Features
+## Introduction
 
+LMS Metrics Proxy is a transparent middleman between your API client and LM Studio that automatically tracks token usage and provides detailed usage statistics.
+
+**Key Features:**
 - **Transparent Proxying**: Works with existing LM Studio clients without code changes
 - **Token Tracking**: Automatically captures input and output token counts for every request
 - **Usage Statistics**: Query endpoints to view summary stats, per-model breakdowns, and recent requests
@@ -33,43 +36,93 @@ Returns response to your application
 - Analyze performance metrics (response times, tokens per request)
 - Debug API interactions with full request/response logging
 
-## Prerequisites
+## Installation and Use
 
-- **Rust**: Install from [rustup.rs](https://rustup.rs/)
-- **Language Model Server**: Any OpenAI-compatible API server (e.g., LM Studio, LocalAI, Ollama with OpenAI compatibility, etc.)
-- Your language model server must be running with its API enabled (default port: 1234 for LM Studio)
+### Method 1: Download from Releases
 
-## Installation
+Download pre-built binaries from the [releases page](https://github.com/ClaytonWWilson/lms-metrics-proxy/releases).
 
-1. Clone the repository:
+**Available platforms:**
+- Linux x86_64
+- Windows x86_64
+- macOS ARM64
+
+**Linux/macOS:**
 ```bash
-git clone <repository-url>
-cd lms_metrics_proxy
+# Download the appropriate binary for your platform
+# Make it executable
+chmod +x lms_metrics_proxy-VERSION-PLATFORM
+
+# Run the proxy
+./lms_metrics_proxy-VERSION-PLATFORM
 ```
 
-2. Copy the example configuration file:
+**Windows:**
+```powershell
+# Download the .exe file
+# Run the proxy
+.\lms_metrics_proxy-VERSION-windows-x86_64.exe
+```
+
+### Method 2: Docker
+
+Run directly from the Docker image:
+
 ```bash
-cp .env.example .env
+docker run -d \
+  --name lms-metrics-proxy \
+  -p 8080:8080 \
+  -v $(pwd)/data:/app/data \
+  -e PORT=8080 \
+  -e LM_STUDIO_URL=http://host.docker.internal:1234 \
+  -e DATABASE_URL=sqlite:./data/metrics.db \
+  -e RUST_LOG=info \
+  ghcr.io/claytonwwilson/lms-metrics-proxy:latest
 ```
 
-3. Edit `.env` if needed (defaults work for most setups):
-```env
-PORT=8080                              # Port for the proxy server
-LM_STUDIO_URL=http://localhost:1234    # LM Studio API endpoint (excluding /v1/)
-DATABASE_URL=sqlite:./metrics.db # Database file location
-RUST_LOG=info                          # Logging level
-```
+**Key points:**
+- Port 8080 is exposed for the proxy
+- Volume mount at `./data` provides persistent database storage
+- `host.docker.internal` allows Docker to connect to LM Studio on your host machine
+- Environment variables configure the proxy behavior
 
-4. Build and run:
+### Method 3: Docker Compose
+
+The repository includes a [docker-compose.yml](docker-compose.yml) file for easy deployment:
+
 ```bash
-cargo run --release
+docker-compose up -d
 ```
 
-The server will start and automatically create the SQLite database on first run.
+This configuration:
+- Uses the same Docker image from GitHub Container Registry
+- Maps port 8080 for the proxy
+- Creates a `./data` directory for persistent database storage
+- Sets `LM_STUDIO_URL` to `http://host.docker.internal:1234` for Docker Desktop
+- Automatically restarts the container unless stopped
+
+### Quick Usage Example
+
+Once running, point your API client to `http://localhost:8080` instead of `http://localhost:1234`:
+
+**Python example:**
+```python
+import requests
+
+response = requests.post(
+    "http://localhost:8080/v1/chat/completions",  # Changed from :1234 to :8080
+    json={
+        "model": "llama-3.2-1b-instruct",
+        "messages": [{"role": "user", "content": "Hello!"}]
+    }
+)
+```
+
+The proxy forwards all `/v1/*` routes to LM Studio and logs token usage automatically.
 
 ## Configuration
 
-Edit the `.env` file to customize settings:
+All methods can be configured using environment variables:
 
 | Variable | Description | Default |
 |----------|-------------|---------|
@@ -78,70 +131,11 @@ Edit the `.env` file to customize settings:
 | `DATABASE_URL` | SQLite database path | `sqlite:./metrics.db` |
 | `RUST_LOG` | Logging level (trace, debug, info, warn, error) | `info` |
 
-## Usage
+**For Docker:** Pass environment variables using `-e` flags in the `docker run` command.
 
-### Starting the Server
+**For Docker Compose:** Edit the `environment` section in [docker-compose.yml](docker-compose.yml).
 
-```bash
-cargo run --release
-```
-
-You should see output like:
-```
-Starting token counter proxy on port 8080 with LM Studio at http://localhost:1234
-Database initialized at sqlite:./metrics.db
-Proxy server listening on 0.0.0.0:8080
-```
-
-### Using with Your Application
-
-Simply point your API client to `http://localhost:8080` instead of `http://localhost:1234`:
-
-**Before (direct to LM Studio):**
-```python
-import requests
-
-response = requests.post(
-    "http://localhost:1234/v1/chat/completions",
-    json={
-        "model": "llama-3.2-1b-instruct",
-        "messages": [{"role": "user", "content": "Hello!"}]
-    }
-)
-```
-
-**After (through Token Counter):**
-```python
-import requests
-
-response = requests.post(
-    "http://localhost:8080/v1/chat/completions",  # Changed port
-    json={
-        "model": "llama-3.2-1b-instruct",
-        "messages": [{"role": "user", "content": "Hello!"}]
-    }
-)
-```
-
-The proxy forwards all `/v1/*` routes to LM Studio and logs the token usage automatically.
-
-### Querying Statistics
-
-Use the statistics endpoints to view usage data:
-
-```bash
-# Check server health
-curl http://localhost:8080/health
-
-# Get overall usage summary
-curl http://localhost:8080/stats/summary
-
-# Get usage breakdown by model
-curl http://localhost:8080/stats/by-model
-
-# Get 50 most recent requests
-curl http://localhost:8080/stats/recent?limit=50
-```
+**For binary releases:** Create a `.env` file in the same directory as the binary (see [.env.example](.env.example)).
 
 ## API Endpoints
 
@@ -238,127 +232,6 @@ Common LM Studio endpoints that work through the proxy:
 - `POST /v1/completions` - Text completions
 - `GET /v1/models` - List available models
 
-## Example Workflows
-
-### Basic Usage Flow
-
-1. Start Token Counter and LM Studio
-2. Make an API request through the proxy
-3. Check the stats to see token usage
-
-```bash
-# Terminal 1: Start the proxy
-cargo run --release
-
-# Terminal 2: Make a request
-curl -X POST http://localhost:8080/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "llama-3.2-1b-instruct",
-    "messages": [{"role": "user", "content": "Explain Rust in one sentence."}]
-  }'
-
-# Terminal 2: Check usage stats
-curl http://localhost:8080/stats/summary
-```
-
-### Monitoring Token Usage Over Time
-
-```bash
-# Get summary before
-curl http://localhost:8080/stats/summary > before.json
-
-# Run your application...
-python my_app.py
-
-# Get summary after
-curl http://localhost:8080/stats/summary > after.json
-
-# Compare to see tokens used
-diff before.json after.json
-```
-
-### Checking Per-Model Usage
-
-```bash
-# See which models are using the most tokens
-curl http://localhost:8080/stats/by-model | jq '.models | sort_by(.total_tokens) | reverse'
-```
-
-### Viewing Recent Requests
-
-```bash
-# Get last 10 requests with formatted output
-curl "http://localhost:8080/stats/recent?limit=10" | jq '.requests[] | {model, tokens: .total_tokens, duration_ms}'
-```
-
-## Troubleshooting
-
-### Port Already in Use
-
-If port 8080 is already taken:
-
-1. Edit `.env` and change `PORT` to another value (e.g., 8081)
-2. Restart the proxy
-3. Update your API client to use the new port
-
-### Cannot Connect to LM Studio
-
-**Error:** Connection refused or timeout when making requests
-
-**Solutions:**
-- Verify LM Studio is running and the local server is started
-- Check LM Studio's server settings (should be on port 1234 by default)
-- If LM Studio uses a different port, update `LM_STUDIO_URL` in `.env`
-- Try accessing LM Studio directly: `curl http://localhost:1234/v1/models`
-
-### Database Permission Errors
-
-**Error:** Cannot create or write to database file
-
-**Solutions:**
-- Ensure the directory for `DATABASE_URL` exists and is writable
-- Check file permissions on `metrics.db`
-- Try using an absolute path in `DATABASE_URL` (e.g., `sqlite:/home/user/data/metrics.db`)
-
-### No Token Counts in Statistics
-
-**Possible causes:**
-- Only POST requests with JSON bodies are tracked (GET requests to `/v1/models` won't show token counts)
-- LM Studio response might not include `usage` field - check LM Studio settings
-- Errors during proxying prevent token logging - check logs with `RUST_LOG=debug`
-
-## Technical Details
-
-### Architecture
-
-- **Framework**: Axum (async web framework)
-- **Runtime**: Tokio (async runtime)
-- **HTTP Client**: Hyper with TLS support
-- **Database**: SQLite with SQLx for async queries
-- **Logging**: Tracing for structured logging
-
-### Database Schema
-
-The `requests` table stores:
-- Request metadata (endpoint, model, timestamps)
-- Token counts (input, output, total)
-- Content (prompt and response text)
-- Performance metrics (duration_ms)
-- Error tracking (is_error, http_status, error_message)
-- Streaming flag (was_streamed)
-
-Indexed on: model, endpoint, start_time, is_error for fast queries.
-
-### Streaming Handling
-
-For streaming responses (Server-Sent Events):
-1. Proxy spawns a background task to parse SSE chunks
-2. Response is forwarded to client in real-time
-3. Token counts are extracted as they arrive in `data: [DONE]` frames
-4. Database logging happens asynchronously without blocking the stream
-
 ## License
 
 MIT License - see LICENSE file for details
-
