@@ -6,14 +6,6 @@ A proxy server that tracks and logs token usage for LM Studio API requests.
 
 LMS Metrics Proxy is a transparent middleman between your API client and LM Studio that automatically tracks token usage and provides detailed usage statistics.
 
-**Key Features:**
-- **Transparent Proxying**: Works with existing LM Studio clients without code changes
-- **Token Tracking**: Automatically captures input and output token counts for every request
-- **Usage Statistics**: Query endpoints to view summary stats, per-model breakdowns, and recent requests
-- **Streaming Support**: Handles both standard and streaming (Server-Sent Events) responses
-- **Persistent Storage**: SQLite database stores complete request history with metadata
-- **Zero-Copy Performance**: Built with Rust for high performance and low overhead
-
 ## What It Does
 
 This tool acts as a transparent middleman between your API client and LM Studio:
@@ -30,6 +22,7 @@ Returns response to your application
 ```
 
 **Why use this?**
+
 - Track how many tokens your applications are using
 - Monitor API costs and usage patterns
 - Audit which models are being called and how often
@@ -43,11 +36,13 @@ Returns response to your application
 Download pre-built binaries from the [releases page](https://github.com/ClaytonWWilson/lms-metrics-proxy/releases).
 
 **Available platforms:**
+
 - Linux x86_64
 - Windows x86_64
 - macOS ARM64
 
 **Linux/macOS:**
+
 ```bash
 # Download the appropriate binary for your platform
 # Make it executable
@@ -58,6 +53,7 @@ chmod +x lms_metrics_proxy-VERSION-PLATFORM
 ```
 
 **Windows:**
+
 ```powershell
 # Download the .exe file
 # Run the proxy
@@ -81,6 +77,7 @@ docker run -d \
 ```
 
 **Key points:**
+
 - Port 8080 is exposed for the proxy
 - Volume mount at `./data` provides persistent database storage
 - `host.docker.internal` allows Docker to connect to LM Studio on your host machine
@@ -95,6 +92,7 @@ docker-compose up -d
 ```
 
 This configuration:
+
 - Uses the same Docker image from GitHub Container Registry
 - Maps port 8080 for the proxy
 - Creates a `./data` directory for persistent database storage
@@ -106,6 +104,7 @@ This configuration:
 Once running, point your API client to `http://localhost:8080` instead of `http://localhost:1234`:
 
 **Python example:**
+
 ```python
 import requests
 
@@ -124,12 +123,12 @@ The proxy forwards all `/v1/*` routes to LM Studio and logs token usage automati
 
 All methods can be configured using environment variables:
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `PORT` | Port the proxy server listens on | `8080` |
-| `LM_STUDIO_URL` | Base URL for LM Studio API | `http://localhost:1234` |
-| `DATABASE_URL` | SQLite database path | `sqlite:./metrics.db` |
-| `RUST_LOG` | Logging level (trace, debug, info, warn, error) | `info` |
+| Variable        | Description                                     | Default                 |
+| --------------- | ----------------------------------------------- | ----------------------- |
+| `PORT`          | Port the proxy server listens on                | `8080`                  |
+| `LM_STUDIO_URL` | Base URL for LM Studio API                      | `http://localhost:1234` |
+| `DATABASE_URL`  | SQLite database path                            | `sqlite:./metrics.db`   |
+| `RUST_LOG`      | Logging level (trace, debug, info, warn, error) | `info`                  |
 
 **For Docker:** Pass environment variables using `-e` flags in the `docker run` command.
 
@@ -142,9 +141,11 @@ All methods can be configured using environment variables:
 ### Statistics Endpoints
 
 #### `GET /health`
+
 Health check endpoint.
 
 **Response:**
+
 ```json
 {
   "status": "ok",
@@ -153,9 +154,11 @@ Health check endpoint.
 ```
 
 #### `GET /stats/summary`
+
 Returns overall usage statistics across all models and requests.
 
 **Response:**
+
 ```json
 {
   "total_requests": 150,
@@ -171,9 +174,11 @@ Returns overall usage statistics across all models and requests.
 ```
 
 #### `GET /stats/by-model`
+
 Returns usage statistics grouped by model.
 
 **Response:**
+
 ```json
 {
   "models": [
@@ -198,12 +203,15 @@ Returns usage statistics grouped by model.
 ```
 
 #### `GET /stats/recent?limit=N`
+
 Returns the N most recent requests (max 1000, default 100).
 
 **Parameters:**
+
 - `limit` (optional): Number of requests to return (1-1000, default: 100)
 
 **Response:**
+
 ```json
 {
   "requests": [
@@ -228,6 +236,7 @@ Returns the N most recent requests (max 1000, default 100).
 All `/v1/*` routes are automatically forwarded to LM Studio. Supported methods: GET, POST, DELETE.
 
 Common LM Studio endpoints that work through the proxy:
+
 - `POST /v1/chat/completions` - Chat completions (standard & streaming)
 - `POST /v1/completions` - Text completions
 - `GET /v1/models` - List available models
